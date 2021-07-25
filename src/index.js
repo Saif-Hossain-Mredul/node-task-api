@@ -36,10 +36,18 @@ app.get('/users/:id', (req, res) => {
 	const _id = req.params.id;
 	User.findById(_id)
 		.then((user) => {
+			if (!user) {
+				res.status(404).send({
+					error: 'No user found for corresponding id',
+				});
+
+				return;
+			}
+
 			res.send(user);
 		})
 		.catch((error) => {
-			res.status(404).send(error);
+			res.status(404).send({ error: 'No user found for corresponding id' });
 		});
 });
 
