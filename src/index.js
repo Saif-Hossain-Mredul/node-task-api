@@ -48,6 +48,32 @@ app.get('/users/:id', async (req, res) => {
 	}
 });
 
+app.patch('/users/:id', async (req, res) => {
+	const requestedUpdates = Object.keys(req.body);
+	const allowedUpdated = ['name', 'email', 'passwords', 'age'];
+	const isAllowed = requestedUpdates.every((update) =>
+		allowedUpdated.includes(update)
+	);
+
+	if (!isAllowed) return res.status(400).send({ error: 'Bad request' });
+
+	try {
+		const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+			runValidators: true,
+		});
+
+		if (!user)
+			return res
+				.status(404)
+				.send({ error: 'Can not find user with this id' });
+
+		res.send(user);
+	} catch (err) {
+		res.status(400).send({ error: 'Bad request' });
+	}
+});
+
 app.post('/tasks', async (req, res) => {
 	const task = new Task(req.body);
 
