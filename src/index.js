@@ -50,12 +50,13 @@ app.get('/users/:id', async (req, res) => {
 
 app.patch('/users/:id', async (req, res) => {
 	const requestedUpdates = Object.keys(req.body);
-	const allowedUpdated = ['name', 'email', 'passwords', 'age'];
+	const allowedUpdates = ['name', 'email', 'passwords', 'age'];
 	const isAllowed = requestedUpdates.every((update) =>
-		allowedUpdated.includes(update)
+		allowedUpdates.includes(update)
 	);
 
-	if (!isAllowed) return res.status(400).send({ error: 'Bad request' });
+	if (!isAllowed)
+		return res.status(400).send({ error: 'Invalid update field' });
 
 	try {
 		const user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -107,6 +108,33 @@ app.get('/tasks/:id', async (req, res) => {
 		res.send(task);
 	} catch (err) {
 		res.status(404).send({ error: 'No task found for corresponding id' });
+	}
+});
+
+app.patch('/tasks/:id', async (req, res) => {
+	const allowedUpdates = ['description', 'completed'];
+	const requestedUpdates = Object.keys(req.body);
+	const isAllowed = requestedUpdates.every((update) =>
+		allowedUpdates.includes(update)
+	);
+
+	if (!isAllowed)
+		return res.status(400).send({ error: 'Invalid update field' });
+
+	try {
+		const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+			runValidators: true,
+		});
+		
+		if (!updatedTask)
+			return res
+				.status(404)
+				.send({ error: 'Can not find any task with this id' });
+
+		res.send(updatedTask);
+	} catch (err) {
+		res.status(400).send(err);
 	}
 });
 
