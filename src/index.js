@@ -75,6 +75,21 @@ app.patch('/users/:id', async (req, res) => {
 	}
 });
 
+app.delete('/users/:id', async (req, res) => {
+	try {
+		const deletedUser = await User.findByIdAndDelete(req.params.id);
+
+		if (!deletedUser)
+			return res
+				.status(404)
+				.send({ error: 'Can not find user with this id' });
+
+		res.send(deletedUser);
+	} catch (err) {
+		res.status(400).send({ error: 'Bad request' });
+	}
+});
+
 app.post('/tasks', async (req, res) => {
 	const task = new Task(req.body);
 
@@ -122,11 +137,15 @@ app.patch('/tasks/:id', async (req, res) => {
 		return res.status(400).send({ error: 'Invalid update field' });
 
 	try {
-		const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-			new: true,
-			runValidators: true,
-		});
-		
+		const updatedTask = await Task.findByIdAndUpdate(
+			req.params.id,
+			req.body,
+			{
+				new: true,
+				runValidators: true,
+			}
+		);
+
 		if (!updatedTask)
 			return res
 				.status(404)
@@ -135,6 +154,21 @@ app.patch('/tasks/:id', async (req, res) => {
 		res.send(updatedTask);
 	} catch (err) {
 		res.status(400).send(err);
+	}
+});
+
+app.delete('/tasks/:id', async (req, res) => {
+	try {
+		const deletedTask = await Task.findByIdAndDelete(req.params.id);
+
+		if (!deletedTask)
+			return res
+				.status(404)
+				.send({ error: 'Can not find any task with this id' });
+
+		res.send(deletedTask);
+	} catch (err) {
+		res.status(400).send({ error: 'Bad request' });
 	}
 });
 
