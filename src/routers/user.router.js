@@ -45,7 +45,7 @@ userRouter.get('/users/:id', async (req, res) => {
 
 userRouter.patch('/users/:id', async (req, res) => {
 	const requestedUpdates = Object.keys(req.body);
-	const allowedUpdates = ['name', 'email', 'passwords', 'age'];
+	const allowedUpdates = ['name', 'email', 'password', 'age'];
 	const isAllowed = requestedUpdates.every((update) =>
 		allowedUpdates.includes(update)
 	);
@@ -54,10 +54,11 @@ userRouter.patch('/users/:id', async (req, res) => {
 		return res.status(400).send({ error: 'Invalid update field' });
 
 	try {
-		const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-			new: true,
-			runValidators: true,
-		});
+		const user = await User.findById(req.params.id);
+
+		requestedUpdates.forEach((update) => (user[update] = req.body[update]));
+
+		await user.save();
 
 		if (!user)
 			return res
