@@ -51,16 +51,24 @@ taskRouter.patch('/tasks/:id', async (req, res) => {
 		return res.status(400).send({ error: 'Invalid update field' });
 
 	try {
-		const updatedTask = await Task.findByIdAndUpdate(
-			req.params.id,
-			req.body,
-			{
-				new: true,
-				runValidators: true,
-			}
+		const task = await Task.findById(req.params.id);
+
+		requestedUpdates.forEach(
+			(updateField) => (task[updateField] = req.body[updateField])
 		);
 
-		if (!updatedTask)
+		await task.save();
+
+		// const updatedTask = await Task.findByIdAndUpdate(
+		// 	req.params.id,
+		// 	req.body,
+		// 	{
+		// 		new: true,
+		// 		runValidators: true,
+		// 	}
+		// );
+
+		if (!task)
 			return res
 				.status(404)
 				.send({ error: 'Can not find any task with this id' });
