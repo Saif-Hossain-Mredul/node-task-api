@@ -12,6 +12,14 @@ app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);
 
+const jwt = require('jsonwebtoken');
+
+const myFunction = async () => {
+	const token = jwt.sign()
+}
+
+myFunction();
+
 app.listen(port, () => {
 	console.log(`Server is up on ${port}`);
 });
