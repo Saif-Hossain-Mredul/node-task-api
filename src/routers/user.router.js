@@ -1,6 +1,7 @@
 const express = require('express');
 
 const User = require('../models/user.model');
+const auth = require('../middlewares/auth.middleware');
 
 const userRouter = new express.Router();
 
@@ -31,10 +32,9 @@ userRouter.post('/users/login', async (req, res) => {
 });
 
 // Get the list of all users
-userRouter.get('/users', async (req, res) => {
+userRouter.get('/users/me', auth, async (req, res) => {
 	try {
-		const users = await User.find({});
-		res.send(users);
+		res.send(req.user);
 	} catch (err) {
 		res.status(500).send({ error: err.message });
 	}
