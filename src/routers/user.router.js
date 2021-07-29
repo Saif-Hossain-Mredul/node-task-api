@@ -4,13 +4,15 @@ const User = require('../models/user.model');
 
 const userRouter = new express.Router();
 
-// Create user route
+// Create user
 userRouter.post('/users', async (req, res) => {
 	const user = new User(req.body);
 
 	try {
 		await user.save();
-		res.status(201).send(user);
+		const token = await user.generateAuthToken();
+
+		res.status(201).send({ user, token });
 	} catch (err) {
 		res.status(400).send({ error: err.message });
 	}
@@ -20,7 +22,9 @@ userRouter.post('/users', async (req, res) => {
 userRouter.post('/users/login', async (req, res) => {
 	try {
 		const user = await User.findByCredentials({ ...req.body });
-		res.send(user);
+		const token = await user.generateAuthToken();
+
+		res.send({ user, token });
 	} catch (err) {
 		res.status(400).send();
 	}

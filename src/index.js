@@ -12,13 +12,18 @@ app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);
 
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
+// const secretKeys = require('./secret-keys');
 
-const myFunction = async () => {
-	const token = jwt.sign()
-}
+// const myFunction = async () => {
+// 	const token = jwt.sign({ _id: 'jksdhfjsdhj' }, secretKeys.TOKEN_SECRET_KEY);
+// 	console.log(token);
 
-myFunction();
+// 	const data = jwt.verify(token, secretKeys.TOKEN_SECRET_KEY);
+// 	console.log(data);
+// };
+
+// myFunction();
 
 app.listen(port, () => {
 	console.log(`Server is up on ${port}`);
