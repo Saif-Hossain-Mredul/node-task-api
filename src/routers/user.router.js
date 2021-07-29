@@ -4,6 +4,7 @@ const User = require('../models/user.model');
 
 const userRouter = new express.Router();
 
+// Create user route
 userRouter.post('/users', async (req, res) => {
 	const user = new User(req.body);
 
@@ -15,6 +16,17 @@ userRouter.post('/users', async (req, res) => {
 	}
 });
 
+// Login user
+userRouter.post('/users/login', async (req, res) => {
+	try {
+		const user = await User.findByCredentials({ ...req.body });
+		res.send(user);
+	} catch (err) {
+		res.status(400).send();
+	}
+});
+
+// Get the list of all users
 userRouter.get('/users', async (req, res) => {
 	try {
 		const users = await User.find({});
@@ -24,6 +36,7 @@ userRouter.get('/users', async (req, res) => {
 	}
 });
 
+// Get an user by his id
 userRouter.get('/users/:id', async (req, res) => {
 	const _id = req.params.id;
 
@@ -43,6 +56,7 @@ userRouter.get('/users/:id', async (req, res) => {
 	}
 });
 
+// Update an user by his id
 userRouter.patch('/users/:id', async (req, res) => {
 	const requestedUpdates = Object.keys(req.body);
 	const allowedUpdates = ['name', 'email', 'password', 'age'];
@@ -71,6 +85,7 @@ userRouter.patch('/users/:id', async (req, res) => {
 	}
 });
 
+// Delete and use by his id
 userRouter.delete('/users/:id', async (req, res) => {
 	try {
 		const deletedUser = await User.findByIdAndDelete(req.params.id);
