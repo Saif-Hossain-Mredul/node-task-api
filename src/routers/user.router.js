@@ -119,12 +119,8 @@ userRouter.patch('/users/me', auth, async (req, res) => {
 // Delete and use by his id
 userRouter.delete('/users/me', auth, async (req, res) => {
 	try {
-		// const deletedUser = await User.findByIdAndDelete(req.user._id);
-
-		// if (!deletedUser)
-		// 	return res
-		// 		.status(404)
-		// 		.send({ error: 'Can not find user with this id' });
+		// we can also use: 
+		// await req.user.remove()
 
 		await req.user.remove();
 

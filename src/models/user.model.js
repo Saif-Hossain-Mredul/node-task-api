@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const secretKeys = require('../secret-keys');
+const Task = require('./task.model');
 
 const userSchema = new mongoose.Schema({
 	name: {
@@ -54,16 +55,16 @@ const userSchema = new mongoose.Schema({
 });
 
 // This means that, I am creating a virtual field with the name of 'tasks',
-// and its reference to the object by which it is going to be populated is 
+// and its reference to the object by which it is going to be populated is
 // 'Task', and the localField and foreignField are just two different but same
 // properties in two different schema. Or simply, populate with those item whose
 // foreignField matches with the provided localField. Its kind of like querying.
-// 
+//
 userSchema.virtual('tasks', {
 	ref: 'Task',
 	localField: '_id',
-	foreignField: 'owner.id'
-})
+	foreignField: 'owner.id',
+});
 
 // Generates public profile
 userSchema.methods.toJSON = function () {
@@ -118,6 +119,15 @@ userSchema.pre('save', async function (next) {
 	if (user.isModified(['password'])) {
 		user.password = await bcrypt.hash(user.password, 8);
 	}
+
+	next();
+});
+
+// Deletes user task when removed
+userSchema.pre('remove', async function (next) {
+	const user = this;
+
+	await Task.deleteMany({ 'owner.id': user._id });
 
 	next();
 });
