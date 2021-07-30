@@ -24,25 +24,28 @@ taskRouter.post('/tasks', auth, async (req, res) => {
 });
 
 // Get the list of all task
-taskRouter.get('/tasks', async (req, res) => {
+taskRouter.get('/tasks', auth, async (req, res) => {
 	try {
-		const tasks = await Task.find({});
-		res.send(tasks);
+		// const tasks = await Task.find({ 'owner.id': req.user._id });
+		await req.user.populate('tasks').execPopulate();
+
+		res.send(req.user.tasks);
 	} catch (err) {
 		res.send({ error: err.message });
 	}
 });
 
 // Get a single task by id
-taskRouter.get('/tasks/:id', async (req, res) => {
+taskRouter.get('/tasks/:id', auth, async (req, res) => {
 	const _id = req.params.id;
 
 	try {
-		const task = Task.findById(_id);
+		const task = await Task.findOne({ _id, 'owner.id': req.user._id });
+
 		if (!task) {
 			return res
 				.status(404)
-				.send({ error: 'No user found for corresponding id' });
+				.send({ error: 'No task found for corresponding id' });
 		}
 		res.send(task);
 	} catch (err) {
