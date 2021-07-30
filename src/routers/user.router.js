@@ -50,7 +50,7 @@ userRouter.post('/users/logout', auth, async (req, res) => {
 
 // Logging out from all sessions
 userRouter.post('/users/logoutAll', auth, async (req, res) => {
-	const {user} = req;
+	const { user } = req;
 
 	try {
 		user.tokens = [];
@@ -61,7 +61,7 @@ userRouter.post('/users/logoutAll', auth, async (req, res) => {
 	} catch (err) {
 		res.status(500).send();
 	}
-})
+});
 
 // Get profile
 userRouter.get('/users/me', auth, async (req, res) => {
@@ -73,27 +73,27 @@ userRouter.get('/users/me', auth, async (req, res) => {
 });
 
 // Get an user by his id
-userRouter.get('/users/:id', async (req, res) => {
-	const _id = req.params.id;
+// userRouter.get('/users/:id', async (req, res) => {
+// 	const _id = req.params.id;
 
-	try {
-		const user = User.findById(_id);
-		if (!user) {
-			res.status(404).send({
-				error: 'No user found for corresponding id',
-			});
+// 	try {
+// 		const user = User.findById(_id);
+// 		if (!user) {
+// 			res.status(404).send({
+// 				error: 'No user found for corresponding id',
+// 			});
 
-			return;
-		}
+// 			return;
+// 		}
 
-		res.send(user);
-	} catch (err) {
-		res.status(404).send({ error: 'No user found for corresponding id' });
-	}
-});
+// 		res.send(user);
+// 	} catch (err) {
+// 		res.status(404).send({ error: 'No user found for corresponding id' });
+// 	}
+// });
 
 // Update an user by his id
-userRouter.patch('/users/:id', async (req, res) => {
+userRouter.patch('/users/me', auth, async (req, res) => {
 	const requestedUpdates = Object.keys(req.body);
 	const allowedUpdates = ['name', 'email', 'password', 'age'];
 	const isAllowed = requestedUpdates.every((update) =>
@@ -104,16 +104,11 @@ userRouter.patch('/users/:id', async (req, res) => {
 		return res.status(400).send({ error: 'Invalid update field' });
 
 	try {
-		const user = await User.findById(req.params.id);
+		const user = req.user;
 
 		requestedUpdates.forEach((update) => (user[update] = req.body[update]));
 
 		await user.save();
-
-		if (!user)
-			return res
-				.status(404)
-				.send({ error: 'Can not find user with this id' });
 
 		res.send(user);
 	} catch (err) {
@@ -122,16 +117,18 @@ userRouter.patch('/users/:id', async (req, res) => {
 });
 
 // Delete and use by his id
-userRouter.delete('/users/:id', async (req, res) => {
+userRouter.delete('/users/me', auth, async (req, res) => {
 	try {
-		const deletedUser = await User.findByIdAndDelete(req.params.id);
+		// const deletedUser = await User.findByIdAndDelete(req.user._id);
 
-		if (!deletedUser)
-			return res
-				.status(404)
-				.send({ error: 'Can not find user with this id' });
+		// if (!deletedUser)
+		// 	return res
+		// 		.status(404)
+		// 		.send({ error: 'Can not find user with this id' });
 
-		res.send(deletedUser);
+		await req.user.remove();
+
+		res.send(req.user);
 	} catch (err) {
 		res.status(400).send({ error: 'Bad request' });
 	}

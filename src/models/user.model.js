@@ -55,6 +55,8 @@ const userSchema = new mongoose.Schema({
 
 // Generates public profile
 userSchema.methods.toJSON = function () {
+	console.log('toJSON called');
+	
 	const user = this;
 	const userObject = user.toObject();
 
