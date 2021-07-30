@@ -25,13 +25,44 @@ userRouter.post('/users/login', async (req, res) => {
 		const user = await User.findByCredentials({ ...req.body });
 		const token = await user.generateAuthToken();
 
-		res.send({ user, token });
+		res.status(200).send({ user, token });
 	} catch (err) {
 		res.status(400).send();
 	}
 });
 
-// Get the list of all users
+// Logging out user
+userRouter.post('/users/logout', auth, async (req, res) => {
+	const { user, token } = req;
+
+	try {
+		user.tokens = user.tokens.filter(
+			(userToken) => userToken.token !== token
+		);
+
+		await user.save();
+
+		res.status(200).send();
+	} catch (err) {
+		res.status(500).send();
+	}
+});
+
+userRouter.post('/users/logoutAll', auth, async (req, res) => {
+	const {user} = req;
+
+	try {
+		user.tokens = [];
+
+		await user.save();
+
+		res.status(200).send();
+	} catch (err) {
+		res.status(500).send();
+	}
+})
+
+// Get profile
 userRouter.get('/users/me', auth, async (req, res) => {
 	try {
 		res.send(req.user);
