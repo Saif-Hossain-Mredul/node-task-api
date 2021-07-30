@@ -48,6 +48,7 @@ userRouter.post('/users/logout', auth, async (req, res) => {
 	}
 });
 
+// Logging out from all sessions
 userRouter.post('/users/logoutAll', auth, async (req, res) => {
 	const {user} = req;
 

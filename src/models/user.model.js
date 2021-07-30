@@ -53,6 +53,17 @@ const userSchema = new mongoose.Schema({
 	],
 });
 
+// Generates public profile
+userSchema.methods.toJSON = function () {
+	const user = this;
+	const userObject = user.toObject();
+
+	delete userObject.password;
+	delete userObject.tokens;
+
+	return userObject;
+};
+
 // Generates user token
 userSchema.methods.generateAuthToken = async function () {
 	const user = this;
@@ -61,8 +72,8 @@ userSchema.methods.generateAuthToken = async function () {
 		secretKeys.TOKEN_SECRET_KEY
 	);
 
-	// Mead user arr.concat() method, like below: 
-	// 
+	// Mead user arr.concat() method, like below:
+	//
 	//user.tokens = user.tokens.concat({token})
 	//
 	user.tokens.push({ token });
