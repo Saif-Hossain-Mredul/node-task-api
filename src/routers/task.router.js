@@ -25,17 +25,29 @@ taskRouter.post('/tasks', auth, async (req, res) => {
 
 // Get the list of all task
 // url: GET /tasks?completed=true
-taskRouter.get('/tasks', auth, async (req, res) => {
-	const match = {};
+// url: GET /tasks?limit=10&skip=10
+// url: GET /tasks?sortBy=createdAt&order=asc
 
-	if (req.query.completed) match.completed = req.query.completed === 'true';
+taskRouter.get('/tasks', auth, async (req, res) => {
+	const { limit, skip, completed, sortBy, order } = req.query;
+	const match = {};
+	const sort = {};
+
+	if (sortBy) sort[sortBy] = order === 'asc' ? 1 : -1;
+	console.log(sort);
+	if (completed) match.completed = completed === 'true';
 
 	try {
-		// const tasks = await Task.find({ 'owner.id': req.user._id });
+		// const tasks = await Task.find({ 'owner.id': req.user._id }).limit(parseInt(req.query.limit));
 		await req.user
 			.populate({
 				path: 'tasks',
 				match,
+				options: {
+					limit: parseInt(limit),
+					skip: parseInt(skip),
+					sort,
+				},
 			})
 			.execPopulate();
 
