@@ -24,10 +24,20 @@ taskRouter.post('/tasks', auth, async (req, res) => {
 });
 
 // Get the list of all task
+// url: GET /tasks?completed=true
 taskRouter.get('/tasks', auth, async (req, res) => {
+	const match = {};
+
+	if (req.query.completed) match.completed = req.query.completed === 'true';
+
 	try {
 		// const tasks = await Task.find({ 'owner.id': req.user._id });
-		await req.user.populate('tasks').execPopulate();
+		await req.user
+			.populate({
+				path: 'tasks',
+				match,
+			})
+			.execPopulate();
 
 		res.send(req.user.tasks);
 	} catch (err) {

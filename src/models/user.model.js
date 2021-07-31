@@ -52,6 +52,8 @@ const userSchema = new mongoose.Schema({
 			},
 		},
 	],
+}, {
+	timestamps: true
 });
 
 // This means that, I am creating a virtual field with the name of 'tasks',
