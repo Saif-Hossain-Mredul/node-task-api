@@ -34,7 +34,7 @@ taskRouter.get('/tasks', auth, async (req, res) => {
 	const sort = {};
 
 	if (sortBy) sort[sortBy] = order === 'asc' ? 1 : -1;
-	console.log(sort);
+	
 	if (completed) match.completed = completed === 'true';
 
 	try {

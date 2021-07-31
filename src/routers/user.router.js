@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 
 const User = require('../models/user.model');
 const auth = require('../middlewares/auth.middleware');
@@ -119,8 +120,8 @@ userRouter.patch('/users/me', auth, async (req, res) => {
 // Delete and use by his id
 userRouter.delete('/users/me', auth, async (req, res) => {
 	try {
-		// we can also use: 
-		// await req.user.remove()
+		// we can also use:
+		// await req.user.delete()
 
 		await req.user.remove();
 
@@ -129,5 +130,17 @@ userRouter.delete('/users/me', auth, async (req, res) => {
 		res.status(400).send({ error: 'Bad request' });
 	}
 });
+
+const upload = multer({
+	dest: 'avatars',
+});
+
+userRouter.post(
+	'/users/me/avatar',
+	upload.single('avatar'),
+	async (req, res) => {
+		res.send();
+	}
+);
 
 module.exports = userRouter;
