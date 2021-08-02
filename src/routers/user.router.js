@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const sharp = require('sharp');
 
 const User = require('../models/user.model');
 const auth = require('../middlewares/auth.middleware');
@@ -73,26 +74,6 @@ userRouter.get('/users/me', auth, async (req, res) => {
 	}
 });
 
-// Get an user by his id
-// userRouter.get('/users/:id', async (req, res) => {
-// 	const _id = req.params.id;
-
-// 	try {
-// 		const user = User.findById(_id);
-// 		if (!user) {
-// 			res.status(404).send({
-// 				error: 'No user found for corresponding id',
-// 			});
-
-// 			return;
-// 		}
-
-// 		res.send(user);
-// 	} catch (err) {
-// 		res.status(404).send({ error: 'No user found for corresponding id' });
-// 	}
-// });
-
 // Update an user by his id
 userRouter.patch('/users/me', auth, async (req, res) => {
 	const requestedUpdates = Object.keys(req.body);
@@ -136,7 +117,7 @@ const upload = multer({
 		fileSize: 1000000,
 	},
 	fileFilter(req, file, cb) {
-		if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+		if (!file.originalname.match(/\.(jpg|jpeg|png|mp3)$/)) {
 			return cb(new Error('Please upload an image'));
 		}
 
@@ -149,12 +130,20 @@ userRouter.post(
 	auth,
 	upload.single('avatar'),
 	async (req, res) => {
+		console.log(req.file);
+
 		try {
-			req.user.avatar = req.file.buffer;
+			const buffer = await sharp(req.file.buffer)
+				.resize({ width: 250, height: 250 })
+				.png()
+				.toBuffer();
+
+			req.user.avatar = buffer;
 			await req.user.save();
 
 			res.send();
 		} catch (err) {
+			console.log(err);
 			res.status(400).send();
 		}
 	},

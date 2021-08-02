@@ -80,6 +80,7 @@ userSchema.methods.toJSON = function () {
 
 	delete userObject.password;
 	delete userObject.tokens;
+	delete userObject.avatar;
 
 	return userObject;
 };
@@ -91,11 +92,7 @@ userSchema.methods.generateAuthToken = async function () {
 		{ _id: user._id.toString() },
 		secretKeys.TOKEN_SECRET_KEY
 	);
-
-	// Mead user arr.concat() method, like below:
-	//
-	//user.tokens = user.tokens.concat({token})
-	//
+	
 	user.tokens.push({ token });
 	await user.save();
 
