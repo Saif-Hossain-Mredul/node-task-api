@@ -31,8 +31,10 @@ const bookSchema = new mongoose.Schema({
 	name: { type: string },
 	description,
 	duration,
-	authorID,
-	authorName,
+	uploader: {
+		authorID,
+		authorName,
+	},
 	bookCover: [],
     contentType: {
         chotoGolpo,

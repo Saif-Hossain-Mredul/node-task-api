@@ -4,6 +4,26 @@ const sharp = require('sharp');
 
 const User = require('../models/user.model');
 const auth = require('../middlewares/auth.middleware');
+const storage = require('../db/gridfs-configure');
+const mongoose = require('mongoose');
+const Grid = require('gridfs-stream');
+
+const mongoURI = 'mongodb://127.0.0.1:27017/task-manager-api';
+
+// Create mongo connection
+const conn = mongoose.createConnection(mongoURI, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+});
+
+// Init gfs
+let gfs;
+
+conn.once('open', async () => {
+	// Init stream
+	gfs = Grid(conn.db, mongoose.mongo);
+	gfs.collection('avatars');
+});
 
 const userRouter = new express.Router();
 
@@ -113,9 +133,10 @@ userRouter.delete('/users/me', auth, async (req, res) => {
 });
 
 const upload = multer({
-	limits: {
-		fileSize: 1000000,
-	},
+	storage,
+	// limits: {
+	// 	fileSize: 1000000,
+	// },
 	fileFilter(req, file, cb) {
 		if (!file.originalname.match(/\.(jpg|jpeg|png|mp3)$/)) {
 			return cb(new Error('Please upload an image'));
@@ -125,23 +146,43 @@ const upload = multer({
 	},
 });
 
+userRouter.get('/files/:filename', (req, res) => {
+	gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+		// Check if file
+		if (!file || file.length === 0) {
+			return res.status(404).json({
+				err: 'No file exists',
+			});
+		}
+		// File exists
+		// const readstream = gfs.createReadStream(file.filename);
+		// readstream.pipe(res);
+		return res.json(file);
+	});
+});
+
 userRouter.post(
 	'/users/me/avatar',
 	auth,
-	upload.single('avatar'),
+	upload.single('file'),
 	async (req, res) => {
-		console.log(req.file);
+		// console.log(req.file);
+		console.log(req.fileInfo);
+
+		const fileUp = await gfs.files.findOne({
+			filename: req.fileInfo.filename,
+		});
 
 		try {
-			const buffer = await sharp(req.file.buffer)
-				.resize({ width: 250, height: 250 })
-				.png()
-				.toBuffer();
+			// const buffer = await sharp(req.file.buffer)
+			// 	.resize({ width: 250, height: 250 })
+			// 	.png()
+			// 	.toBuffer();
 
-			req.user.avatar = buffer;
+			req.user.avatar = fileUp;
 			await req.user.save();
 
-			res.send();
+			res.send(req.user);
 		} catch (err) {
 			console.log(err);
 			res.status(400).send();

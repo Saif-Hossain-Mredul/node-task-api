@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const {conn} = require('../db/mongoose');
 const secretKeys = require('../secret-keys');
 const Task = require('./task.model');
 
@@ -53,7 +54,7 @@ const userSchema = new mongoose.Schema({
 		},
 	],
 	avatar: {
-		type: Buffer
+		
 	}
 }, {
 	timestamps: true
@@ -134,6 +135,6 @@ userSchema.pre('remove', async function (next) {
 	next();
 });
 
-const User = mongoose.model('User', userSchema);
+const User = conn.model('User', userSchema);
 
 module.exports = User;
