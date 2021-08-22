@@ -9,55 +9,22 @@ const Grid = require('gridfs-stream');
 
 const { conn } = require('../../db/mongoose');
 const createUser = require('./route-functions/create-user.rf');
-
+const loginUser = require('./route-functions/login-user.rf');
+const logOut = require('./route-functions/logout-user.rf');
+const logOutAllSessions = require('./route-functions/logoutAll.rf');
 const userRouter = new express.Router();
 
 // Create user
 userRouter.post('/users', createUser);
 
 // Login user
-userRouter.post('/users/login', async (req, res) => {
-	try {
-		const user = await User.findByCredentials({ ...req.body });
-		const token = await user.generateAuthToken();
-
-		res.status(200).send({ user, token });
-	} catch (err) {
-		res.status(400).send();
-	}
-});
+userRouter.post('/users/login', loginUser);
 
 // Logging out user
-userRouter.post('/users/logout', auth, async (req, res) => {
-	const { user, token } = req;
-
-	try {
-		user.tokens = user.tokens.filter(
-			(userToken) => userToken.token !== token
-		);
-
-		await user.save();
-
-		res.status(200).send();
-	} catch (err) {
-		res.status(500).send();
-	}
-});
+userRouter.post('/users/logout', auth, logOut);
 
 // Logging out from all sessions
-userRouter.post('/users/logoutAll', auth, async (req, res) => {
-	const { user } = req;
-
-	try {
-		user.tokens = [];
-
-		await user.save();
-
-		res.status(200).send();
-	} catch (err) {
-		res.status(500).send();
-	}
-});
+userRouter.post('/users/logoutAll', auth, logOutAllSessions);
 
 // Get profile
 userRouter.get('/users/me', auth, async (req, res) => {
