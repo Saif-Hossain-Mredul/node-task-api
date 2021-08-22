@@ -12,6 +12,11 @@ const createUser = require('./route-functions/create-user.rf');
 const loginUser = require('./route-functions/login-user.rf');
 const logOut = require('./route-functions/logout-user.rf');
 const logOutAllSessions = require('./route-functions/logoutAll.rf');
+const getUser = require('./route-functions/get-user.rf');
+const updateUserById = require('./route-functions/update-user-by-id.rf');
+const deleteUser = require('./route-functions/delete-user.rf');
+const deleteAvatar = require('./route-functions/delete-avatar.rf');
+
 const userRouter = new express.Router();
 
 // Create user
@@ -27,51 +32,13 @@ userRouter.post('/users/logout', auth, logOut);
 userRouter.post('/users/logoutAll', auth, logOutAllSessions);
 
 // Get profile
-userRouter.get('/users/me', auth, async (req, res) => {
-	try {
-		res.send(req.user);
-	} catch (err) {
-		res.status(500).send({ error: err.message });
-	}
-});
+userRouter.get('/users/me', auth, getUser);
 
 // Update an user by his id
-userRouter.patch('/users/me', auth, async (req, res) => {
-	const requestedUpdates = Object.keys(req.body);
-	const allowedUpdates = ['name', 'email', 'password', 'age'];
-	const isAllowed = requestedUpdates.every((update) =>
-		allowedUpdates.includes(update)
-	);
-
-	if (!isAllowed)
-		return res.status(400).send({ error: 'Invalid update field' });
-
-	try {
-		const user = req.user;
-
-		requestedUpdates.forEach((update) => (user[update] = req.body[update]));
-
-		await user.save();
-
-		res.send(user);
-	} catch (err) {
-		res.status(400).send({ error: 'Bad request' });
-	}
-});
+userRouter.patch('/users/me', auth, updateUserById);
 
 // Delete and use by his id
-userRouter.delete('/users/me', auth, async (req, res) => {
-	try {
-		// we can also use:
-		// await req.user.delete()
-
-		await req.user.remove();
-
-		res.send(req.user);
-	} catch (err) {
-		res.status(400).send({ error: 'Bad request' });
-	}
-});
+userRouter.delete('/users/me', auth, deleteUser);
 
 // Init gfs
 let gfs;
@@ -137,16 +104,8 @@ userRouter.post(
 	}
 );
 
-userRouter.delete('/users/me/avatar', auth, async (req, res) => {
-	try {
-		req.user.avatar = undefined;
-		await req.user.save();
-
-		res.send();
-	} catch (err) {
-		res.status(400).send();
-	}
-});
+// Delete avatar
+userRouter.delete('/users/me/avatar', auth, deleteAvatar);
 
 userRouter.get('/users/:id/avatar', async (req, res) => {
 	try {
