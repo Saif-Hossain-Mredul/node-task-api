@@ -1,29 +1,19 @@
 const express = require('express');
 const multer = require('multer');
 
-const User = require('../models/user.model');
-const auth = require('../middlewares/auth.middleware');
-const storage = require('../db/gridfs-configure');
+const User = require('../../models/user.model');
+const auth = require('../../middlewares/auth.middleware');
+const storage = require('../../db/gridfs-configure');
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
 
-const { conn } = require('../db/mongoose');
+const { conn } = require('../../db/mongoose');
+const createUser = require('./route-functions/create-user.rf');
 
 const userRouter = new express.Router();
 
 // Create user
-userRouter.post('/users', async (req, res) => {
-	const user = new User(req.body);
-
-	try {
-		await user.save();
-		const token = await user.generateAuthToken();
-
-		res.status(201).send({ user, token });
-	} catch (err) {
-		res.status(400).send({ error: err.message });
-	}
-});
+userRouter.post('/users', createUser);
 
 // Login user
 userRouter.post('/users/login', async (req, res) => {
