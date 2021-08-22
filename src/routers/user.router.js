@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const sharp = require('sharp');
 
 const User = require('../models/user.model');
 const auth = require('../middlewares/auth.middleware');
@@ -8,22 +7,7 @@ const storage = require('../db/gridfs-configure');
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
 
-const mongoURI = 'mongodb://127.0.0.1:27017/task-manager-api';
-
-// Create mongo connection
-const conn = mongoose.createConnection(mongoURI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-});
-
-// Init gfs
-let gfs;
-
-conn.once('open', async () => {
-	// Init stream
-	gfs = Grid(conn.db, mongoose.mongo);
-	gfs.collection('avatars');
-});
+const { conn } = require('../db/mongoose');
 
 const userRouter = new express.Router();
 
@@ -132,6 +116,15 @@ userRouter.delete('/users/me', auth, async (req, res) => {
 	}
 });
 
+// Init gfs
+let gfs;
+
+conn.once('open', async () => {
+	// Init stream
+	gfs = Grid(conn.db, mongoose.mongo);
+	gfs.collection('avatars');
+});
+
 const upload = multer({
 	storage,
 	// limits: {
@@ -146,19 +139,18 @@ const upload = multer({
 	},
 });
 
-userRouter.get('/files/:filename', (req, res) => {
-	gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
-		// Check if file
-		if (!file || file.length === 0) {
-			return res.status(404).json({
-				err: 'No file exists',
-			});
-		}
-		// File exists
-		// const readstream = gfs.createReadStream(file.filename);
-		// readstream.pipe(res);
-		return res.json(file);
-	});
+userRouter.get('/files/:filename', async (req, res) => {
+	const file = await gfs.files.findOne({ filename: req.params.filename });
+
+	if (!file || file.length === 0) {
+		return res.status(404).json({
+			err: 'No file exists',
+		});
+	}
+	// File exists
+	const readstream = gfs.createReadStream(file.filename);
+	readstream.pipe(res);
+	// return res.json(file);
 });
 
 userRouter.post(
@@ -174,11 +166,6 @@ userRouter.post(
 		});
 
 		try {
-			// const buffer = await sharp(req.file.buffer)
-			// 	.resize({ width: 250, height: 250 })
-			// 	.png()
-			// 	.toBuffer();
-
 			req.user.avatar = fileUp;
 			await req.user.save();
 
