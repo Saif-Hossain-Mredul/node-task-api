@@ -3,6 +3,8 @@ require('./db/mongoose');
 
 const userRouter = require('./routers/user.router');
 const taskRouter = require('./routers/task.router');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('../swagger.json');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,10 +30,11 @@ const port = process.env.PORT || 3000;
 // });
 
 app.use(express.json());
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(userRouter);
 app.use(taskRouter);
 
 app.listen(port, () => {
+	console.log(`For api docs: http://localhost:3000/api-docs`)
 	console.log(`Server is up on ${port}`);
 });
